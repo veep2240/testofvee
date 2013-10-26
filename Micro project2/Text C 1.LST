@@ -1,0 +1,433 @@
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 1   
+
+
+C51 COMPILER V6.14, COMPILATION OF MODULE TEXT_C_1
+OBJECT MODULE PLACED IN Text C 1.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Text C 1.C BROWSE DEBUG OBJECTEXTEND
+
+stmt level    source
+
+   1          
+   2          //=========== Lab21_Serial.C ===========
+   3          #include <reg52.h>         
+   4          #include <stdio.h> 
+   5          #include <ctype.h>
+   6           char LCD_Buff[16];
+   7          
+   8          
+   9          #include"Inc_LCD.C"
+  10          
+  11          
+  12          #define PortO_Seg P0 
+  13          bit	LeftRightDisp;
+  14          
+  15          sbit SW0 = P1^0;
+  16          sbit SW1 = P1^1;
+  17          sbit SW2 = P1^2;
+  18          sbit SW3 = P1^3; 
+  19          sbit SW36 = P3^6;
+  20          sbit SW37 = P3^7;
+  21          
+  22          sbit CS_Seg0	= P1^4;
+  23          sbit CS_Seg1	= P1^5;
+  24          //set time
+  25           int i;
+  26           int a1=0;
+  27           int a2=0;
+  28           int a3=0;
+  29           int a4=0;
+  30          //
+  31          unsigned int time2=30;
+  32          unsigned int time1=30;
+  33          int b[4]={68,69,71,72};
+  34          int num[4]={0,0,0,0};
+  35           int Count=-1;
+  36           int final=0;
+  37           int Count1;
+  38           int Count2;
+  39          unsigned int mode=2;  
+  40          int p=1;
+  41          code unsigned char CodeSeg[] = { 0x77,0x11,0x6D,0x5D,0x1B,0x5E,0x7E,0x15,		   
+  42          								 0x7F,0x5F };
+  43          code unsigned char CodeSeg1[] = { 0x08};
+  44          void lcd10();
+  45          //====================================================
+  46          void lcd10(void)
+  47          {	
+  48   1      				 
+  49   1          			LCD_Goto(0);
+  50   1      				sprintf(LCD_Buff,"  cross word ");
+  51   1      				LCD_Print();
+  52   1      			
+  53   1      				LCD_Goto(64);
+  54   1      				sprintf(LCD_Buff,"1=%d%d:%d%d",Count1/60/10%10,Count1/60%10,Count1%60/10,Count1%60%10);
+  55   1      				LCD_Print();
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 2   
+
+  56   1      
+  57   1      				LCD_Goto(73);
+  58   1      				sprintf(LCD_Buff,"2=%d%d:%d%d",Count2/60/10%10,Count2/60%10,Count2%60/10,Count2%60%10);							        
+             - 			   
+  59   1      				LCD_Print();	
+  60   1      }
+  61          
+  62          //====================================================
+  63          void Delay(unsigned char msec)
+  64          	{	unsigned char i,j;
+  65   1      
+  66   1      		while(msec)
+  67   1      			{	for(i=1;i<=250;i++) 		//not :
+  68   2      					for(j=1;j<=113;j++); 	//with ;
+  69   2      				msec--;
+  70   2      			} 
+  71   1      	}
+  72          
+  73          //====================================================
+  74           
+  75          //====================================================
+  76           	    void int1_isr(void) interrupt 2 
+  77          	{	
+  78   1      		EX1 = 0;
+  79   1      		if(p!=1)
+  80   1      		{	// Disable Interrupt INT1
+  81   2      		 Count2=Count;
+  82   2      		 Count = Count1;
+  83   2      		}
+  84   1      		
+  85   1      		p=1;
+  86   1        		CS_Seg0 = 0;	
+  87   1      		CS_Seg1 = 0; 
+  88   1      		EX1 = 1;	// Enablr Interrupt INT1 
+  89   1      		IE1 = 0;
+  90   1      	}
+  91          //====================================================
+  92          	  void int0_isr(void) interrupt 0 
+  93          	{	
+  94   1      		EX0 = 0;	// Disable Interrupt INT0
+  95   1      		if(p!=2)
+  96   1      		{
+  97   2      		Count1=Count;
+  98   2      		Count = Count2;
+  99   2      		}
+ 100   1      		p=2;
+ 101   1        		CS_Seg0 = 0;	
+ 102   1      		CS_Seg1 = 0; 
+ 103   1      		EX0 = 1;	// Enablr Interrupt INT0 
+ 104   1      		IE0 = 0;
+ 105   1      	}
+ 106          //====================================================
+ 107          void main (void) 
+ 108          	{
+ 109   1      	
+ 110   1      		LCD_Initial();
+ 111   1      
+ 112   1      		SCON  	= 0x50;		// SCON: mode 1, 8-bit UART, enable rcvr      
+ 113   1          	RCAP2H 	= 0xFF; 	// Config Timer2
+ 114   1      		RCAP2L	= 0xC4; 	// 9600 FFC4@18.432MHz 
+ 115   1        		TI    	= 1;		// Set TI to send first char of UART     
+ 116   1      		
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 3   
+
+ 117   1      
+ 118   1      		ET0 = 1;    	// Enable External 0 Interrupt
+ 119   1      
+ 120   1      		IT0 = 1;    // Adge Trigger Interrupt
+ 121   1      		EX0 = 1;    // Enable External 0 Interrupt
+ 122   1      		IT1 = 1;    // Adge Trigger Interrupt
+ 123   1      		EX1 = 1;    // Enable External 1 Interrupt
+ 124   1      		
+ 125   1      		EA  = 1;    	// Globol Interrupt Enable 
+ 126   1      		
+ 127   1      		Count1=Count;
+ 128   1      		Count2=Count;
+ 129   1      		LCD_Initial();
+ 130   1      		LCD_Goto(0);
+ 131   1      		sprintf(LCD_Buff,"  SELECT  MODE");
+ 132   1      		LCD_Print();
+ 133   1      		LCD_Goto(64);
+ 134   1      		sprintf(LCD_Buff," A=UP    B=DOWN");
+ 135   1      		LCD_Print();
+ 136   1      		
+ 137   1      		Delay(5);
+ 138   1      		while(1)//step 1
+ 139   1      		{
+ 140   2      			  if(SW3==0)//mode2 time down
+ 141   2      			  {
+ 142   3      			  	mode=2;
+ 143   3      				break;
+ 144   3      			  }
+ 145   2      			  if(SW2==0)//mode1 time up
+ 146   2      			  {			 	
+ 147   3      			    mode=1;
+ 148   3      				break;
+ 149   3      			  }
+ 150   2      		}
+ 151   1      		LCD_Initial();
+ 152   1      		LCD_Goto(0);
+ 153   1      		sprintf(LCD_Buff,"   TIME SET");
+ 154   1      		LCD_Print();
+ 155   1      		LCD_Goto(64);
+ 156   1      		sprintf(LCD_Buff,"    00:00");
+ 157   1      		LCD_Print();
+ 158   1      		LCD_Goto(68);
+ 159   1      		i=0;
+ 160   1      		
+ 161   1      		while(1)//step 2
+ 162   1      		{		
+ 163   2      			  	if(SW0==0)
+ 164   2      				{  Count=(num[0]*10+num[1])*60 +(num[2]*10)+num[3];
+ 165   3      				   if(Count==-1||Count==0)
+ 166   3      				   { LCD_Goto(64);	
+ 167   4      					 sprintf(LCD_Buff,"   Insert Time");
+ 168   4      					 LCD_Print();
+ 169   4      					 Delay(10);
+ 170   4      					 LCD_Initial();
+ 171   4      					 LCD_Goto(0);
+ 172   4      					 sprintf(LCD_Buff,"   TIME SET");
+ 173   4      					 LCD_Print();
+ 174   4      					 LCD_Goto(68);
+ 175   4      					 sprintf(LCD_Buff,"%d%d:%d%d",num[0],num[1],num[2],num[3]);
+ 176   4      					 LCD_Print();
+ 177   4      					 LCD_Goto(68);
+ 178   4      				   }
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 4   
+
+ 179   3      				   else
+ 180   3      				   {
+ 181   4      					break;
+ 182   4      				   }
+ 183   3      
+ 184   3      				   SW0=1;
+ 185   3      				   Delay(4);
+ 186   3      				}
+ 187   2      
+ 188   2      				if(SW1==0)
+ 189   2      				{  		if(i>2)
+ 190   3      						{
+ 191   4      						  i=0;
+ 192   4      						}
+ 193   3      						else{
+ 194   4      							i++;
+ 195   4      							}
+ 196   3      
+ 197   3      						LCD_Goto(b[i]);	
+ 198   3      				   SW1=1;
+ 199   3      				   Delay(4);	
+ 200   3      				}
+ 201   2      				if(SW2==0)
+ 202   2      				{	 LCD_Goto(68);
+ 203   3      					 num[i]=(++num[i])%10;
+ 204   3      					 num[2]=num[2]%7;
+ 205   3      					 sprintf(LCD_Buff,"%d%d:%d%d",num[0],num[1],num[2],num[3]);
+ 206   3      					 LCD_Print();
+ 207   3      					 LCD_Goto(b[i]);
+ 208   3      				   SW2=1;
+ 209   3      				   Delay(4);
+ 210   3      				}
+ 211   2      				if(SW3==0)
+ 212   2      				{
+ 213   3      					 LCD_Goto(68);
+ 214   3      					 num[i]=(--num[i])%10;
+ 215   3      					 num[2]=num[2]%7;
+ 216   3      					 if(num[i]<0)
+ 217   3      					 {
+ 218   4      					 	num[i]=9;
+ 219   4      					 }
+ 220   3      					 sprintf(LCD_Buff,"%d%d:%d%d",num[0],num[1],num[2],num[3]);
+ 221   3      					 LCD_Print();
+ 222   3      					 LCD_Goto(b[i]);
+ 223   3      				     SW3=1;
+ 224   3      				     Delay(4);	
+ 225   3      				}
+ 226   2      		}
+ 227   1      		LCD_Initial();
+ 228   1      		if(mode==1)
+ 229   1      		{
+ 230   2      			final=Count-1;
+ 231   2      			Count1=0;
+ 232   2      			Count2=0;
+ 233   2      			Count=0;
+ 234   2      		}
+ 235   1      		if(mode==2)
+ 236   1      		{
+ 237   2      			final=0;
+ 238   2      			Count1=Count;
+ 239   2      			Count2=Count;
+ 240   2      		}
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 5   
+
+ 241   1      		SW37=0;
+ 242   1      		SW36=1;
+ 243   1      
+ 244   1      		LCD_Goto(0);
+ 245   1      		sprintf(LCD_Buff," SELECT PLAYER:");
+ 246   1      		LCD_Print();
+ 247   1      		LCD_Goto(15);
+ 248   1      		sprintf(LCD_Buff,"%d",p);
+ 249   1      		LCD_Print();	
+ 250   1      		LCD_Goto(64);
+ 251   1      		sprintf(LCD_Buff,"     START");
+ 252   1      		LCD_Print();	
+ 253   1      		LCD_Goto(15);	
+ 254   1      
+ 255   1      		while(1)
+ 256   1      		{
+ 257   2      			 if(SW3==0)
+ 258   2      			 {	SW37=1;
+ 259   3      				SW36=0;
+ 260   3      			 	p=2;
+ 261   3      				sprintf(LCD_Buff,"%d",p);
+ 262   3      				LCD_Print();
+ 263   3      				LCD_Goto(15);
+ 264   3      			 }
+ 265   2      			 if(SW2==0)
+ 266   2      			 {	SW37=0;
+ 267   3      				SW36=1;
+ 268   3      			 	p=1;
+ 269   3      				sprintf(LCD_Buff,"%d",p);
+ 270   3      				LCD_Print();
+ 271   3      				LCD_Goto(15);
+ 272   3      			 }
+ 273   2      			 if(SW0==0)
+ 274   2      			 {
+ 275   3      			 	break;
+ 276   3      			 }
+ 277   2      		}
+ 278   1      		LCD_Initial();
+ 279   1      		if(mode==1)//time up
+ 280   1      		{
+ 281   2      		while (1) 		
+ 282   2      			{	
+ 283   3      	  					
+ 284   3      				Delay(10);
+ 285   3      				Count++;
+ 286   3      				
+ 287   3      				if((Count1>final)&&(Count2>final))
+ 288   3      				{
+ 289   4      									EX1 = 1;
+ 290   4      									EX0 = 1;
+ 291   4      								   break;
+ 292   4      				}
+ 293   3      				else{
+ 294   4      				if(p==1)	
+ 295   4      				{
+ 296   5      					
+ 297   5      					if(Count1>final)
+ 298   5      					{	Count = Count2;
+ 299   6      						p=2;
+ 300   6      					}
+ 301   5      					else
+ 302   5      					{
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 6   
+
+ 303   6      					 Count1=Count;
+ 304   6      					}
+ 305   5      				}
+ 306   4      				else if(p==2)
+ 307   4      				{
+ 308   5      					
+ 309   5      					if(Count2>final)
+ 310   5      					{	Count = Count1;
+ 311   6      						p=1;
+ 312   6      					}
+ 313   5      					else
+ 314   5      					{
+ 315   6      					Count2=Count;
+ 316   6      					}
+ 317   5      				}
+ 318   4      
+ 319   4      				}
+ 320   3      				lcd10();
+ 321   3      			}
+ 322   2      		}
+ 323   1      
+ 324   1      		else if(mode==2)//time down
+ 325   1      		{
+ 326   2      		while (1) 		
+ 327   2      			{	
+ 328   3      	  					
+ 329   3      				Delay(10);
+ 330   3      				Count--;
+ 331   3      				
+ 332   3      				if((Count1<=final)&&(Count2<=final))
+ 333   3      				{
+ 334   4      									EX1 = 1;
+ 335   4      									EX0 = 1;
+ 336   4      								   break;
+ 337   4      				}
+ 338   3      				else{
+ 339   4      				if(p==1)	
+ 340   4      				{
+ 341   5      					
+ 342   5      					if(Count1<=final)
+ 343   5      					{	Count = Count2;
+ 344   6      						p=2;
+ 345   6      						SW37=0;
+ 346   6      						SW36=1;
+ 347   6      					}
+ 348   5      					else
+ 349   5      					{
+ 350   6      					 Count1=Count;
+ 351   6      					}
+ 352   5      				}
+ 353   4      				else if(p==2)
+ 354   4      				{
+ 355   5      					
+ 356   5      					if(Count2<=final)
+ 357   5      					{	Count = Count1;
+ 358   6      						p=1;
+ 359   6      						SW37=1;
+ 360   6      						SW36=0;
+ 361   6      					}
+ 362   5      					else
+ 363   5      					{
+ 364   6      					Count2=Count;
+C51 COMPILER V6.14  TEXT_C_1                                                               08/21/2013 07:27:25 PAGE 7   
+
+ 365   6      					}
+ 366   5      				}
+ 367   4      
+ 368   4      				}
+ 369   3      				lcd10();
+ 370   3      			}
+ 371   2      		}
+ 372   1      
+ 373   1      			LCD_Goto(0);
+ 374   1      			sprintf(LCD_Buff,"     End Game ");
+ 375   1      			LCD_Print();
+ 376   1      
+ 377   1      			LCD_Goto(0);
+ 378   1      			while(1)
+ 379   1      			{
+ 380   2      				  if(SW1==0)
+ 381   2      				  {
+ 382   3      				  SW0=0;
+ 383   3      				  LCD_Initial();
+ 384   3      				  LCD_Goto(0);
+ 385   3      				  sprintf(LCD_Buff,"                ");
+ 386   3      			      LCD_Print();
+ 387   3      				  LCD_Goto(64);
+ 388   3      				  sprintf(LCD_Buff,"                ");
+ 389   3      			      LCD_Print();
+ 390   3      				  break;
+ 391   3      				  }
+ 392   2      			}
+ 393   1      		
+ 394   1      		  
+ 395   1       }
+ 396          
+ 397          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1888    ----
+   CONSTANT SIZE    =    189    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     58    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

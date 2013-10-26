@@ -1,0 +1,104 @@
+C51 COMPILER V6.14  INC_LCD                                                                08/13/2013 14:13:55 PAGE 1   
+
+
+C51 COMPILER V6.14, COMPILATION OF MODULE INC_LCD
+OBJECT MODULE PLACED IN Inc_LCD.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Inc_LCD.C BROWSE DEBUG OBJECTEXTEND
+
+stmt level    source
+
+   1          //===== Inc_LCD.C ======
+   2          //===================================================
+   3          //       LCD Subroutine Program 
+   4          //===================================================
+   5          #define PortLCD P2 	// Using P2.4,P2.5,P2.6 and P2.7
+   6          sbit EN=P2^3;
+*** ERROR C202 IN LINE 6 OF INC_LCD.C: 'P2': undefined identifier
+   7          sbit RS=P2^2;
+*** ERROR C202 IN LINE 7 OF INC_LCD.C: 'P2': undefined identifier
+   8          
+   9          void LCD_WrDelay(char i)
+  10          {	unsigned int j;
+  11   1      	do
+  12   1      	{	for(j=0;j<500;j++) {}
+  13   2      	  	i--;
+  14   2      	}
+  15   1      	while(i>0);
+  16   1      }
+  17          
+  18          void LCD_WrCmd(unsigned char i)
+  19          {	PortLCD = i | 0x0f;
+*** ERROR C202 IN LINE 19 OF INC_LCD.C: 'P2': undefined identifier
+  20   1      	RS = 0;
+*** ERROR C202 IN LINE 20 OF INC_LCD.C: 'RS': undefined identifier
+  21   1      	EN = 1;
+*** ERROR C202 IN LINE 21 OF INC_LCD.C: 'EN': undefined identifier
+  22   1      	LCD_WrDelay(2);
+  23   1      	EN = 0;
+*** ERROR C202 IN LINE 23 OF INC_LCD.C: 'EN': undefined identifier
+  24   1      	LCD_WrDelay(2);
+  25   1      
+  26   1      	PortLCD = (i<<4)| 0x0f;
+*** ERROR C202 IN LINE 26 OF INC_LCD.C: 'P2': undefined identifier
+  27   1      	RS = 0;
+*** ERROR C202 IN LINE 27 OF INC_LCD.C: 'RS': undefined identifier
+  28   1      	EN = 1;
+*** ERROR C202 IN LINE 28 OF INC_LCD.C: 'EN': undefined identifier
+  29   1      	LCD_WrDelay(2);
+  30   1      	EN = 0;
+*** ERROR C202 IN LINE 30 OF INC_LCD.C: 'EN': undefined identifier
+  31   1      	LCD_WrDelay(2);
+  32   1      }
+  33          
+  34          void LCD_WrData(unsigned char i)
+  35          {	PortLCD = i | 0x0f;
+*** ERROR C202 IN LINE 35 OF INC_LCD.C: 'P2': undefined identifier
+  36   1      	RS = 1;
+*** ERROR C202 IN LINE 36 OF INC_LCD.C: 'RS': undefined identifier
+  37   1      	EN = 1;
+*** ERROR C202 IN LINE 37 OF INC_LCD.C: 'EN': undefined identifier
+  38   1      	LCD_WrDelay(2);
+  39   1      	EN = 0;
+*** ERROR C202 IN LINE 39 OF INC_LCD.C: 'EN': undefined identifier
+  40   1      	LCD_WrDelay(2);
+  41   1      
+C51 COMPILER V6.14  INC_LCD                                                                08/13/2013 14:13:55 PAGE 2   
+
+  42   1      	PortLCD = (i<<4)| 0x0f;
+*** ERROR C202 IN LINE 42 OF INC_LCD.C: 'P2': undefined identifier
+  43   1      	RS = 1;
+*** ERROR C202 IN LINE 43 OF INC_LCD.C: 'RS': undefined identifier
+  44   1      	EN = 1;
+*** ERROR C202 IN LINE 44 OF INC_LCD.C: 'EN': undefined identifier
+  45   1      	LCD_WrDelay(2);
+  46   1      	EN = 0;
+*** ERROR C202 IN LINE 46 OF INC_LCD.C: 'EN': undefined identifier
+  47   1      	LCD_WrDelay(2);
+  48   1      }
+  49          
+  50          void LCD_Initial(void)
+  51          {	LCD_WrCmd(0x33);
+  52   1      	LCD_WrCmd(0x32);
+  53   1      	LCD_WrCmd(0x28);
+  54   1      	LCD_WrCmd(0x0f);
+  55   1      	LCD_WrCmd(0x06);
+  56   1      	LCD_WrCmd(0x01);
+  57   1      }
+  58          
+  59          void LCD_Goto(unsigned char i)
+  60          { 	i |=0x80;
+  61   1      	LCD_WrCmd(i);
+  62   1      }
+  63          
+  64          void LCD_Print(void)
+  65          {	char i=0;
+  66   1      	do
+  67   1      	{	LCD_WrData(LCD_Buff[i]);
+*** ERROR C202 IN LINE 67 OF INC_LCD.C: 'LCD_Buff': undefined identifier
+  68   2      		i++;
+  69   2      	}
+  70   1      	while(LCD_Buff[i] != '\0');
+*** ERROR C202 IN LINE 70 OF INC_LCD.C: 'LCD_Buff': undefined identifier
+  71   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  20 ERROR(S)
